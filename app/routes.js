@@ -1,5 +1,6 @@
 var User = require('./models/user');
 module.exports = function (app, passport) {
+
     app.get('/', function (req, res) {
         res.render('index.ejs');
     });
@@ -16,8 +17,14 @@ module.exports = function (app, passport) {
     });
 
     app.get('/logout', function (req, res) {
-        req.logout();
-        res.send({'loged-out': 1});
+        if (req.user) {
+            req.logout();
+            res.send({'loged-out': 1});
+        } else {
+            res.send({'loged-out': 0});
+        }
+
+
     })
 
     app.get('/login',
@@ -27,8 +34,7 @@ module.exports = function (app, passport) {
         },
         passport.authenticate('local-login', {
             successRedirect: '/profile',
-            failureRedirect: '/profile',
-            failureFlash: true
+            failureRedirect: '/profile'
         }));
 
     app.get('/signup', passport.authenticate('local-signup', {
@@ -37,12 +43,24 @@ module.exports = function (app, passport) {
         failureFlash: true
     }));
 
-    app.get('/auth/facebook', passport.authenticate('facebook', {scope: ['email']}));
+    app.get('/auth/facebook', passport.authenticate('facebook', {session: false, scope: ['email']}));
+
+    // app.get('/auth/facebook/callback',
+    //     passport.authenticate('facebook', { session: false, failureRedirect: "/" }),
+    //     function(req, res) {
+    //         res.redirect("/profile?access_token=" + req.user.access_token);
+    //     }
+    // );
+
     app.get('/auth/facebook/callback',
         passport.authenticate('facebook', {
-            successRedirect: '/profile',
+            session: false,
             failureRedirect: '/'
-        }));
+        }),
+        function (req, res) {
+            res.send(req.user)
+        }
+    );
 
 
 };
