@@ -16,34 +16,24 @@ module.exports = function (app, passport) {
         }
     });
 
-    app.get('/logout', function (req, res) {
-        if (req.user) {
-            req.logout();
-            res.send({'loged-out': 1});
-        } else {
-            res.send({'loged-out': 0});
-        }
-
-
-    })
 
     app.get('/login',
-        function (req, res, next) {
-            req.logout();
-            next();
-        },
         passport.authenticate('local-login', {
-            successRedirect: '/profile',
-            failureRedirect: '/profile'
-        }));
+            session: false
+        }),
+        function (req, res) {
+            console.log(req.loginError)
+            res.send(req.user)
+        });
 
-    app.get('/signup', passport.authenticate('local-signup', {
-        successRedirect: '/profile',
-        failureRedirect: '/signup',
-        failureFlash: true
-    }));
-
-
+    app.get('/signup',
+        passport.authenticate('local-signup', {
+            session: false,
+        }),
+        function (req, res) {
+            console.log(req.loginError)
+            res.send(req.user)
+        });
 
 
     app.get('/auth/facebook',
